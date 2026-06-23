@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoxPage · Admin</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <!-- LOGIN VIEW -->
+    <div id="view-login" class="login-wrap">
+        <form id="login-form" class="login-card">
+            <div class="brand">🔊 VoxPage <span>Admin</span></div>
+            <p class="login-sub">Sign in with an admin account.</p>
+            <input id="login-email" type="email" placeholder="Email" autocomplete="username" required>
+            <input id="login-password" type="password" placeholder="Password" autocomplete="current-password" required>
+            <button type="submit" id="login-btn" class="btn btn-primary">Sign in</button>
+            <p id="login-error" class="error hidden"></p>
+        </form>
+    </div>
+
+    <!-- DASHBOARD VIEW -->
+    <div id="view-dashboard" class="hidden">
+        <header class="topbar">
+            <div class="brand">🔊 VoxPage <span>Admin</span></div>
+            <div class="topbar-right">
+                <span id="admin-email" class="admin-email"></span>
+                <button id="logout-btn" class="btn btn-ghost">Logout</button>
+            </div>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab active" data-tab="users">Users</button>
+            <button class="tab" data-tab="readers">Readers</button>
+            <button class="tab" data-tab="settings">Settings</button>
+        </nav>
+
+        <main class="content">
+            <!-- USERS TAB -->
+            <section id="tab-users" class="tab-panel active">
+                <div class="stats" id="stats"></div>
+                <div class="panel">
+                    <div class="panel-head">
+                        <h2>Users</h2>
+                        <button id="refresh-users" class="btn btn-ghost">↻ Refresh</button>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Email</th><th>Plan</th><th>Status</th>
+                                <th>Reads today</th><th>Joined</th><th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-body"></tbody>
+                    </table>
+                    <p id="users-empty" class="empty hidden">No users yet.</p>
+                </div>
+            </section>
+
+            <!-- READERS TAB -->
+            <section id="tab-readers" class="tab-panel">
+                <div class="panel">
+                    <div class="panel-head">
+                        <h2>Readers</h2>
+                        <button id="new-reader" class="btn btn-primary">+ New reader</button>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Avatar</th><th>Name</th><th>Slug</th><th>Plan</th>
+                                <th>Voice ID</th><th>Enabled</th><th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="readers-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- SETTINGS (.env) TAB -->
+            <section id="tab-settings" class="tab-panel">
+                <div class="warn-banner">
+                    ⚠️ These are the backend <code>.env</code> variables. Secrets are hidden by default.
+                    Most changes only take effect after you <strong>restart the server</strong>.
+                    Editing <span class="risk-text">risky</span> variables (DB, JWT secret, port, admin
+                    credentials) can break login or boot.
+                </div>
+                <div class="panel">
+                    <div class="panel-head">
+                        <h2>Environment variables</h2>
+                        <div class="cell-actions">
+                            <button id="env-add" class="btn btn-ghost">+ Add variable</button>
+                            <button id="env-refresh" class="btn btn-ghost">↻ Reload</button>
+                            <button id="env-save" class="btn btn-primary" disabled>Save changes</button>
+                        </div>
+                    </div>
+                    <div id="env-sections"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- READER EDITOR MODAL -->
+    <div id="reader-modal" class="modal-overlay hidden">
+        <form id="reader-form" class="modal-card">
+            <h3 id="reader-modal-title">New reader</h3>
+            <input type="hidden" id="reader-id">
+            <label>Name<input id="reader-name" required></label>
+            <label>Slug (id)<input id="reader-slug" placeholder="e.g. luna" required></label>
+            <label>Description<input id="reader-description"></label>
+            <label>Personality prompt<textarea id="reader-personality" rows="3"></textarea></label>
+            <label>ElevenLabs voice ID<input id="reader-voice" placeholder="e.g. 9BWtsMINqrJLrRacOk9x" required></label>
+            <label>Avatar path<input id="reader-avatar" placeholder="assets/readers/luna.svg"></label>
+            <div class="row">
+                <label class="inline">Required plan
+                    <select id="reader-plan">
+                        <option value="free">free</option>
+                        <option value="premium">premium</option>
+                    </select>
+                </label>
+                <label class="inline checkbox">
+                    <input type="checkbox" id="reader-enabled" checked> Enabled
+                </label>
+            </div>
+            <p id="reader-error" class="error hidden"></p>
+            <div class="modal-actions">
+                <button type="button" id="reader-cancel" class="btn btn-ghost">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+    <script src="dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Voice Reader</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+    <!-- Toast Notifications Container -->
+    <div id="toast-container"></div>
+
+    <!-- ================== LOGIN / REGISTER VIEW ================== -->
+    <div id="view-auth" class="view active">
+        <!-- Login Form -->
+        <div id="form-login" class="auth-form">
+            <div class="auth-header">
+                <h2 class="auth-title" data-i18n="tab_login">Login</h2>
+                <button id="tab-register" class="auth-toggle" data-i18n="tab_register">Register</button>
+            </div>
+            <label data-i18n="label_gmail">GMAIL</label>
+            <input type="email" id="login-email" placeholder="ENTER YOUR GMAIL" data-i18n-placeholder="ph_gmail">
+            <label data-i18n="label_password">Password</label>
+            <input type="password" id="login-password" placeholder="ENTER YOUR Password" data-i18n-placeholder="ph_password">
+            <div class="auth-actions">
+                <button id="btn-forgot" class="link-btn" data-i18n="btn_forgot">Forgot Password</button>
+                <button id="btn-connect" class="primary-btn btn-blue" data-i18n="btn_connect">Connect</button>
+            </div>
+        </div>
+
+        <!-- Register Form -->
+        <div id="form-register" class="auth-form hidden">
+            <div class="auth-header">
+                <h2 class="auth-title" data-i18n="tab_register">Register</h2>
+                <button id="tab-login" class="auth-toggle" data-i18n="tab_login">Login</button>
+            </div>
+            <label data-i18n="label_gmail">GMAIL</label>
+            <input type="email" id="register-email" placeholder="ENTER YOUR GMAIL" data-i18n-placeholder="ph_gmail">
+            <label><span data-i18n="label_password">Password</span> <span id="password-strength"></span></label>
+            <input type="password" id="register-password" placeholder="ENTER YOUR Password" data-i18n-placeholder="ph_password">
+            <input type="password" id="register-password-confirm" placeholder="Confirm YOUR Password" data-i18n-placeholder="ph_confirm_password">
+            <div class="verify-row">
+                <input type="text" id="register-code" placeholder="Enter the code sent in GMAIL" data-i18n-placeholder="ph_code">
+                <button id="btn-resend-code" class="secondary-btn" title="Send Code Again" data-i18n="btn_send_code">Send Code</button>
+                <button id="btn-verify-email" class="btn-orange-outline" data-i18n="btn_verify">verify your email</button>
+            </div>
+            <button id="btn-register" class="primary-btn register-btn" data-i18n="btn_register">register</button>
+            <div id="register-status" class="status-label"></div>
+        </div>
+
+        <!-- Forgot Password Form -->
+        <div id="form-forgot" class="auth-form hidden">
+            <div class="forgot-header">
+                <button id="btn-forgot-back" class="back-link" data-i18n="btn_back_login">← Back to Login</button>
+            </div>
+            <h3 class="forgot-title" data-i18n="title_reset">Reset Password</h3>
+            <label data-i18n="label_gmail">GMAIL</label>
+            <input type="email" id="forgot-email" placeholder="ENTER YOUR GMAIL" data-i18n-placeholder="ph_gmail">
+            <div class="verify-row">
+                <button id="btn-forgot-send-code" class="secondary-btn" data-i18n="btn_send_reset_code">Send Reset Code</button>
+            </div>
+            <label data-i18n="label_new_password">New Password</label>
+            <input type="password" id="forgot-new-password" placeholder="ENTER NEW Password" data-i18n-placeholder="ph_new_password">
+            <input type="password" id="forgot-confirm-password" placeholder="CONFIRM NEW Password" data-i18n-placeholder="ph_confirm_new_password">
+            <label data-i18n="label_verification_code">Verification Code</label>
+            <input type="text" id="forgot-code" placeholder="Enter code from email" data-i18n-placeholder="ph_code_email">
+            <button id="btn-reset-password" class="primary-btn register-btn" data-i18n="btn_reset_password">Reset Password</button>
+        </div>
+    </div>
+
+    <!-- ================== MAIN VIEW (After Login) ================== -->
+    <div id="view-main" class="view hidden">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="user-info">
+                <span id="user-email-display">user@gmail.com</span>
+                <span id="user-plan-display" class="plan-badge">free</span>
+            </div>
+            <div class="header-actions">
+                <button id="btn-clear-history" class="icon-btn" title="Clear History">🗑️</button>
+                <button id="btn-settings" class="icon-btn" title="Settings">⚙️</button>
+            </div>
+        </header>
+
+        <!-- Reader Display -->
+        <div class="reader-section">
+            <div id="reader-timer" class="timer">00:00</div>
+            <div id="btn-read-page" class="reader-avatar-wrapper" title="Click to read this page">
+                <img id="reader-avatar" src="" alt="Reader Avatar">
+            </div>
+            <div id="reader-name" class="reader-name">Aiko</div>
+        </div>
+
+        <!-- Chat Input -->
+        <div class="chat-input-section">
+            <input type="text" id="chat-input" placeholder="ask your reader for something...." data-i18n-placeholder="ph_chat">
+            <button id="btn-mic" class="icon-btn" title="Microphone">🎤</button>
+            <button id="btn-send" class="icon-btn send-btn" title="Send">➤</button>
+        </div>
+
+        <!-- History -->
+        <div id="chat-history" class="history-box">
+            <div class="history-placeholder" data-i18n="history_placeholder">No conversation history yet</div>
+        </div>
+
+        <!-- Other Readers -->
+        <div class="other-readers-section">
+            <span data-i18n="other_readers">Other_Readers ...</span>
+            <button id="btn-show-readers" class="dots-btn">•••</button>
+        </div>
+
+        <!-- Resize Handle -->
+        <div id="resize-handle" class="resize-handle" title="Drag to resize">
+            <span class="resize-grip">⋯</span>
+        </div>
+    </div>
+
+    <!-- ================== READER SELECTION PANEL ================== -->
+    <div id="view-readers" class="view hidden">
+        <header class="panel-header">
+            <button id="btn-readers-back" class="back-btn">‹</button>
+            <span data-i18n="hdr_select_reader">Select Reader</span>
+        </header>
+        <div class="search-bar">
+            <input type="text" id="reader-search" placeholder="research your reader ..." data-i18n-placeholder="ph_search">
+            <span class="search-icon">🔍</span>
+        </div>
+        <div id="readers-list" class="readers-list">
+            <!-- Dynamically populated -->
+        </div>
+    </div>
+
+    <!-- ================== SETTINGS VIEW ================== -->
+    <div id="view-settings" class="view hidden">
+        <header class="panel-header">
+            <button id="btn-settings-back" class="back-btn">‹</button>
+            <span data-i18n="hdr_settings">Settings</span>
+        </header>
+
+        <div class="settings-content">
+            <!-- Account Settings Button (shown if logged in) -->
+            <button id="btn-account-settings" class="settings-item" data-i18n="item_account_settings">Account Settings</button>
+
+            <!-- Upgrade Button -->
+            <button id="btn-upgrade" class="upgrade-btn" data-i18n="btn_upgrade">Upgrade Your plan 💎</button>
+
+            <!-- Logout (shown if logged in) -->
+            <button id="btn-logout" class="settings-item logout-btn" data-i18n="btn_logout">Logout</button>
+        </div>
+    </div>
+
+    <!-- ================== ACCOUNT DETAILS VIEW ================== -->
+    <div id="view-account" class="view hidden">
+        <header class="panel-header">
+            <button id="btn-account-back" class="back-btn">‹</button>
+            <span data-i18n="hdr_settings">Settings</span>
+        </header>
+
+        <div class="account-details">
+            <h3 data-i18n="account_details">Account details</h3>
+            <div class="detail-row">
+                <span class="label" data-i18n="label_gmail_colon">GMAIL:</span>
+                <span id="account-email">xyz......@gmail.com</span>
+            </div>
+            <div class="detail-row">
+                <span class="label" data-i18n="label_password_colon">Password:</span>
+                <button id="btn-change-password" class="secondary-btn" data-i18n="btn_change_password">Change_Password</button>
+            </div>
+            <div class="detail-row">
+                <span class="label" data-i18n="label_current_plan">Current_Plan:</span>
+                <span id="account-plan">premium</span>
+                <button id="btn-upgrade-inline" class="upgrade-inline-btn" data-i18n="btn_upgrade_inline">UPGRADE</button>
+            </div>
+            <div class="detail-row">
+                <span class="label" data-i18n="label_linked_account">Linked account</span>
+                <button id="btn-link-google" class="link-google-btn">
+                    <img src="https://www.google.com/favicon.ico" alt="G" class="google-icon">
+                    <span>Link Google</span>
+                </button>
+            </div>
+            <div class="account-actions">
+                <button id="btn-account-logout" class="secondary-btn" data-i18n="btn_account_logout">logout</button>
+                <button id="btn-change-language" class="secondary-btn" data-i18n="btn_change_language">change language</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 class="modal-title" data-i18n="modal_title">Confirm Action</h3>
+            <p class="modal-message" id="modal-message">Are you sure?</p>
+            <div class="modal-actions">
+                <button id="btn-modal-cancel" class="modal-btn cancel" data-i18n="modal_cancel">Cancel</button>
+                <button id="btn-modal-confirm" class="modal-btn confirm" data-i18n="modal_confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="popup.js" type="module"></script>
+</body>
+
+</html>

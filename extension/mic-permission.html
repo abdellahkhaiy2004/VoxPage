@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microphone access — AI Voice Reader</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            color: #222;
+        }
+        .card {
+            background: #fff;
+            padding: 36px 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            max-width: 440px;
+            text-align: center;
+        }
+        .mic { font-size: 48px; margin-bottom: 8px; }
+        h1 { font-size: 20px; margin: 0 0 12px; }
+        p { font-size: 14px; line-height: 1.5; color: #555; }
+        #status { margin-top: 18px; font-weight: 600; }
+        .ok { color: #2e7d32; }
+        .err { color: #d32f2f; }
+        button {
+            margin-top: 20px;
+            background: linear-gradient(135deg, #64b5f6 0%, #42a5f5 100%);
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="mic">🎤</div>
+        <h1>Enable microphone</h1>
+        <p>Click <strong>Allow</strong> when your browser asks, so you can talk to your AI reader by voice. You only need to do this once.</p>
+        <p id="status">Requesting microphone permission…</p>
+        <button id="retry">Request again</button>
+    </div>
+    <script src="mic-permission.js"></script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+    "name": "mon_projet_extention",
+    "version": "1.0.0",
+    "description": "Chrome Extension",
+    "main": "extension/background/background.js",
+    "scripts": {
+        "test": "node tests/integration_test.js",
+        "start:server": "node backend/server.js",
+        "models:list": "node backend/list-gemini-models.js",
+        "voices:list": "node backend/list-elevenlabs-voices.js",
+        "voices:probe": "node backend/probe-elevenlabs-voices.js"
+    },
+    "dependencies": {
+        "bcryptjs": "^3.0.3",
+        "cors": "^2.8.5",
+        "dotenv": "^16.3.1",
+        "express": "^4.18.2",
+        "express-rate-limit": "^8.2.1",
+        "jsonwebtoken": "^9.0.3",
+        "nodemailer": "^6.9.7",
+        "pg": "^8.11.3"
+    },
+    "type": "module",
+    "author": "",
+    "license": "ISC"
+}
