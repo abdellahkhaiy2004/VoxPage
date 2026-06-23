@@ -13,6 +13,7 @@ It is backed by a secure Node.js + PostgreSQL API that handles accounts, email v
 - **Voice personas ("AI Readers")** — each persona is a voice + personality (e.g. *Aiko* cheerful/free, *Ren* calm/premium). Your choice is remembered.
 - **Persistent playback** — a floating overlay keeps reading even when the popup is closed.
 - **Accounts & plans** — register, email verification, login, password reset, and free/premium gating.
+- **Admin dashboard** — a separate web console (served at `/admin`) to manage users, ban/unban accounts, change plans, manage the reader catalog, and edit backend `.env` settings. Admins are provisioned from the server config, never through the extension.
 
 ---
 
@@ -22,7 +23,8 @@ It is backed by a secure Node.js + PostgreSQL API that handles accounts, email v
 Popup UI        → User interaction & audio controls
 Content Script  → DOM reading + in-page audio overlay (untrusted zone)
 Background SW   → AI, TTS, auth, readers, orchestration (trusted zone)
-Backend API     → Auth, accounts, plans (Express + PostgreSQL)
+Backend API     → Auth, accounts, plans, admin (Express + PostgreSQL)
+Admin Dashboard → Static web console served at /admin (admin-only API)
 External APIs   → Google Gemini (text) · ElevenLabs (voice)
 ```
 
@@ -52,9 +54,14 @@ extension/
 ├─ shared/        # contracts.js (message schemas + validation) + storage.js
 └─ manifest.json
 backend/
-├─ server.js          # Express API (auth, AI/TTS proxy, plans, linking)
+├─ server.js          # Express API (auth, AI/TTS proxy, plans, linking, admin)
 ├─ plan.strategy.js   # server-side plan limits (authoritative)
-├─ database/schema.sql
+├─ env.manager.js     # parse/update backend/.env for the admin Settings panel
+├─ public/admin/      # admin dashboard web console (index.html, dashboard.js, admin.css)
+├─ database/
+│  ├─ schema.sql                    # full schema (users, readers, usage…)
+│  ├─ migration_admin_readers.sql   # idempotent migration for existing DBs
+│  └─ run-sql.js                    # apply a .sql file without psql installed
 ├─ .env.example       # committed template
 └─ .env               # (NOT committed — see setup)
 tests/
@@ -98,6 +105,11 @@ EMAIL_USER=your_gmail_address
 EMAIL_PASS=your_gmail_app_password
 TEST_MODE=true   # logs codes to console instead of sending email
 
+# Admin account — provisioned automatically on server startup (the ONLY way to
+# create an admin; the extension registration panel always creates regular users).
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=change_me_to_a_strong_password
+
 # AI / TTS provider keys (server-side only — never shipped to the client)
 GEMINI_API_KEY=your_gemini_key
 ELEVENLABS_API_KEY=your_elevenlabs_key
@@ -110,9 +122,18 @@ GOOGLE_CLIENT_ID=
 Initialize the database, then start the server:
 
 ```bash
+# Fresh database — full schema (includes users, readers, admin flags):
 psql -d voxpage -f backend/database/schema.sql
+
+# Existing database — apply the idempotent admin/readers migration instead.
+# No psql? Use the bundled runner (reads backend/.env for the connection):
+node backend/database/run-sql.js backend/database/migration_admin_readers.sql
+
 npm run start:server
 ```
+
+On startup the server provisions the admin account from `ADMIN_EMAIL`/`ADMIN_PASSWORD`
+and loads the reader catalog from the database (log: `👑 Admin account ready: …`).
 
 ### 2. API keys
 
@@ -128,6 +149,38 @@ The extension calls the backend with the user's JWT; the backend calls Gemini/El
 1. Go to `chrome://extensions`
 2. Enable **Developer mode**
 3. **Load unpacked** → select the `extension/` folder
+
+---
+
+## Admin dashboard
+
+A standalone web console for operators, served by the backend at **`http://localhost:3000/admin`**.
+It is separate from the extension — the extension stays user-only.
+
+**Access:** an admin is any user with `is_admin = TRUE` in the database. You never register an
+admin; the server creates/updates one from `ADMIN_EMAIL` / `ADMIN_PASSWORD` in `backend/.env` on
+every startup (idempotent — verified, premium, un-bannable). Log in at `/admin` with those
+credentials; non-admin accounts are rejected.
+
+**What it does:**
+
+- **Users** — list every account with plan, status, and today's read count; change a user's plan;
+  **ban / unban** (a ban blocks new logins *and* rejects existing tokens on all protected routes).
+  Admin accounts are protected from being banned.
+- **Readers** — full CRUD over the AI reader catalog (name, slug, description, personality prompt,
+  required plan, ElevenLabs voice id, avatar, enabled). Readers now live in the `readers` DB table
+  instead of being hardcoded; the extension fetches them from `GET /readers` and caches them.
+- **Settings (.env)** — view and edit backend environment variables grouped by section. Secrets are
+  masked with a reveal toggle, comments/formatting are preserved on save, and high-risk keys
+  (`DB_*`, `JWT_SECRET`, `PORT`, `ADMIN_*`) are flagged with a confirm step. Most changes require a
+  server restart to take effect.
+
+> ⚠️ The Settings panel exposes secrets to anyone holding an admin token. Keep the backend behind
+> HTTPS and a locked-down `ALLOWED_ORIGIN` before exposing it beyond localhost.
+
+**Admin API** (all behind an admin-only JWT check): `GET /admin/users`, `GET /admin/stats`,
+`POST /admin/users/:id/ban` · `/unban` · `/plan`, `GET/POST/PUT/DELETE /admin/readers`,
+`GET/PUT /admin/env`.
 
 ---
 
